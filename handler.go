@@ -9,9 +9,8 @@ import (
 )
 
 type Config struct {
-	Address string `json:"address,omitempty"`
 	// Templates *
-	Deliveries []*DeliveryConfig `json:"deliveries,omitempty"`
+	Receivers []*ReceiverConfig `json:"receivers,omitempty"`
 }
 
 func Serve(ctx context.Context, conf *Config) error {
@@ -19,10 +18,10 @@ func Serve(ctx context.Context, conf *Config) error {
 	// todo
 	var tmpl *template.Template
 
-	for _, cf := range conf.Deliveries {
-		d, e := NewDelivery(tmpl, cf)
+	for _, cf := range conf.Receivers {
+		d, e := NewReceiver(tmpl, cf)
 		if e != nil {
-			return fmt.Errorf("config delivery handler: %w", e)
+			return fmt.Errorf("config delivery handler %s: %w", cf.Name, e)
 		}
 		mux.Handle(cf.Name, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			e := d.NewMessage(ctx, r.Body)
