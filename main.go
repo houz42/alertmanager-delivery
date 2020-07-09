@@ -35,7 +35,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	l, e := net.Listen("TCP", *address)
+	l, e := net.Listen("tcp", *address)
 	if e != nil {
 		log.Error(e, "listen", "address", *address)
 		os.Exit(1)

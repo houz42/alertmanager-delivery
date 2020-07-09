@@ -11,7 +11,7 @@ import (
 
 type Config struct {
 	// path to global template files
-	Tempaltes []string
+	Tempaltes []string          `json:"tempaltes,omitempty"`
 	Receivers []*ReceiverConfig `json:"receivers,omitempty"`
 }
 

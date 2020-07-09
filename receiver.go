@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-logr/logr"
 	"github.com/prometheus/alertmanager/config"
 	"github.com/prometheus/alertmanager/template"
 	"github.com/supremind/pkg/duration"
@@ -24,9 +25,11 @@ type Receiver struct {
 	tmpl    *template.Template
 	conf    *ReceiverConfig
 	headers http.Header
+	log     logr.Logger
 }
 
 type ReceiverConfig struct {
+	// name should be a valid path element: no whith space, no slash
 	Name              string            `json:"name,omitempty"`
 	URL               config.URL        `json:"url,omitempty"`
 	Body              string            `json:"body,omitempty"`
@@ -57,6 +60,7 @@ func NewReceiver(tmpl *template.Template, conf *ReceiverConfig) (*Receiver, erro
 		},
 		tmpl: tmpl,
 		conf: conf,
+		log:  log.WithName(conf.Name + " receiver"),
 	}
 	if len(conf.AdditionalHeaders) > 0 {
 		h := make(http.Header, len(conf.AdditionalHeaders))
@@ -90,15 +94,18 @@ func (d *Receiver) NewMessage(ctx context.Context, r io.Reader) error {
 	}
 	req.Header = d.headers
 	resp, e := d.client.Do(req)
+	if e != nil {
+		msg, _ := ioutil.ReadAll(resp.Body)
+		d.log.Error(e, "request downstream failed", "downstrem response", string(msg))
+		return fmt.Errorf("post request: %w", e)
+	}
 	defer func() {
 		io.Copy(ioutil.Discard, resp.Body)
 	}()
-	if e != nil {
-		return fmt.Errorf("post request: %w", e)
-	}
 
-	if l := log.WithName(d.conf.Name + " receiver").V(8); l.Enabled() {
-		l.Info("new message deliveried", "message", body)
+	if l := d.log.V(8); l.Enabled() {
+		msg, _ := ioutil.ReadAll(resp.Body)
+		l.Info("new message deliveried", "message", body, "response", msg)
 	}
 	return nil
 }
