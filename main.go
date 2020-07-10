@@ -11,6 +11,7 @@ import (
 	"github.com/supremind/pkg/log"
 	"github.com/supremind/pkg/shutdown"
 	"gopkg.in/yaml.v2"
+	"github.com/houz42/alertmanager-delivery/handler"
 )
 
 func main() {
@@ -28,7 +29,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer confFile.Close()
-	conf := &Config{}
+	conf := &handler.Config{}
 	if e := yaml.NewDecoder(confFile).Decode(conf); e != nil {
 		log.Error(e, "decode config file")
 		os.Exit(1)
@@ -37,7 +38,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	mux, e := Serve(ctx, conf)
+	mux, e := handler.Serve(ctx, conf)
 	if e != nil {
 		log.Error(e, "config server")
 		os.Exit(1)
