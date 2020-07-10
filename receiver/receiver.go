@@ -1,4 +1,4 @@
-package main
+package receiver
 
 import (
 	"context"
@@ -29,7 +29,7 @@ type Receiver struct {
 }
 
 type ReceiverConfig struct {
-	// name should be a valid path element: no whith space, no slash
+	// name should be a valid dns label
 	Name              string            `json:"name,omitempty"`
 	URL               config.URL        `json:"url,omitempty"`
 	Body              string            `json:"body,omitempty"`
@@ -74,38 +74,53 @@ func NewReceiver(tmpl *template.Template, conf *ReceiverConfig) (*Receiver, erro
 }
 
 func (d *Receiver) NewMessage(ctx context.Context, r io.Reader) error {
+	body, e := d.transform(r)
+	if e != nil {
+		return e
+	}
+	return d.send(ctx, body)
+}
+
+func (d Receiver) transform(r io.Reader) (io.Reader, error) {
+	if d.conf.Body == "" {
+		return r, nil
+	}
 	data := &template.Data{}
-	if e := json.NewDecoder(r).Decode(r); e != nil {
-		return fmt.Errorf("decode message: %w", e)
+	if e := json.NewDecoder(r).Decode(data); e != nil {
+		return nil, fmt.Errorf("decode message: %w", e)
 	}
 
-	var body string
-	if len(d.conf.Body) > 0 {
-		var e error
-		body, e = d.tmpl.ExecuteTextString(d.conf.Body, data)
-		if e != nil {
-			return fmt.Errorf("execute template: %w", e)
-		}
+	var e error
+	text, e := d.tmpl.ExecuteTextString(d.conf.Body, data)
+	if e != nil {
+		return nil, fmt.Errorf("execute template: %w", e)
 	}
+	body := strings.NewReader(text)
 
-	req, e := http.NewRequestWithContext(ctx, http.MethodPost, d.conf.URL.String(), strings.NewReader(body))
+	d.log.Info("out", "body", text)
+	return body, nil
+}
+
+func (d *Receiver) send(ctx context.Context, body io.Reader) error {
+	req, e := http.NewRequestWithContext(ctx, http.MethodPost, d.conf.URL.String(), body)
 	if e != nil {
 		return fmt.Errorf("parse url for new request: %w", e)
 	}
 	req.Header = d.headers
 	resp, e := d.client.Do(req)
 	if e != nil {
-		msg, _ := ioutil.ReadAll(resp.Body)
-		d.log.Error(e, "request downstream failed", "downstrem response", string(msg))
 		return fmt.Errorf("post request: %w", e)
 	}
 	defer func() {
 		io.Copy(ioutil.Discard, resp.Body)
+		resp.Body.Close()
 	}()
 
 	if l := d.log.V(8); l.Enabled() {
 		msg, _ := ioutil.ReadAll(resp.Body)
 		l.Info("new message deliveried", "message", body, "response", msg)
 	}
+	d.log.Info("new message deliveried")
+
 	return nil
 }

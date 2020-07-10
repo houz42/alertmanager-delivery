@@ -1,0 +1,30 @@
+{{ define "example.echo-yaml" }}
+receiver: {{ .Receiver }}
+status: {{ .Status }}
+{{- if .Alerts }}
+alerts:
+  {{- range .Alerts }}
+- status: {{ .Status }}
+  labels:
+    {{- range $key, $val := .Labels }}
+    {{ $key }}: {{ $val }}
+    {{- end }}
+  annotations:
+    {{- range $key, $val := .Annotations }}
+    {{ $key }}: {{ $val }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+groupLabels:
+  {{- range $key, $val := .GroupLabels }}
+  {{ $key }}: {{ $val }}
+  {{- end }}
+commonLabels:
+  {{- range $key, $val := .CommonLabels }}
+  {{ $key }}: {{ $val }}
+  {{- end }}
+commonAnnotations:
+  {{- range $key, $val := .CommonAnnotations }}
+  {{ $key }}: {{ $val }}
+  {{- end }}
+{{ end }}

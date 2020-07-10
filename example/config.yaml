@@ -1,0 +1,9 @@
+templates:
+- example/*.tmpl
+receivers:
+- name: plain
+  url: http://localhost:7777
+  body: plain text
+- name: simple-tmpl
+  url: http://localhost:7778
+  body: `{{ .}}
