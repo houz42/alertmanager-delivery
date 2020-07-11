@@ -1,0 +1,79 @@
+{{ define "example.wechat-bot.text" -}}
+{
+    "msgtype": "text",
+    "text": {
+        "content": "{{ template "__wechat-bot-text-content" .}}"
+        {{- if .CommonAnnotations.mentions }},
+        "mentioned_list": {{ .CommonAnnotations.mentions }}
+        {{- end }}
+        {{- if .CommonAnnotations.mention_mobiles }},
+        "mentioned_mobile_list": {{ .CommonAnnotations.mention_mobiles }}
+        {{- end }}
+    }
+}
+{{- end}}
+
+{{ define "example.wechat-bot.markdown" -}}
+{
+    "msgtype": "markdown",
+    "markdown": {
+        "content": "{{ template "__wechat-bot-markdown-content" .}}"
+        {{- if .CommonAnnotations.mentions }},
+        "mentioned_list": {{ .CommonAnnotations.mentions }}
+        {{- end }}
+        {{- if .CommonAnnotations.mention_mobiles }},
+        "mentioned_mobile_list": {{ .CommonAnnotations.mention_mobiles }}
+        {{- end }}
+    }
+}
+{{- end}}
+
+{{ define "example.wechat-bot.news" -}}
+{
+    "msgtype": "news",
+    "news": {
+        "articles": [
+            {{ range $i, $alert := .Alerts }}
+            {{ if $i -}},{{end}}
+            {{ template "__wechat-bot-news-article" $alert }}
+            {{ end }}
+        ]
+    }
+}
+{{- end}}
+
+
+{{ define "__wechat-bot-text-content" -}}
+Alert {{ .Status | title }}
+{{- range .Alerts }}
+{{.Annotations.title}} is {{.Status | title}}
+    {{if .Annotations.summary}}{{.Annotations.summary}}{{end}}
+    {{- range .Labels.SortedPairs }}
+        {{.Name}}: {{.Value}}
+    {{- end }}
+{{- end }}
+{{- end}}
+
+
+{{ define "__wechat-bot-markdown-content" -}}
+## <font color=\"warning\">[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}]</font> {{ .CommonLabels.alertname }} for {{ .CommonLabels.job }}
+{{- range .Alerts }}
+### <font color=\"warning\">{{.Annotations.title}}</font> is {{.Status | title}}
+![]({{.GeneratorURL}})
+{{if .Annotations.summary}}<font color=\"comment\">{{.Annotations.summary}}</font>{{end}}
+{{if .Annotations.description}}> <font color=\"comment\">{{.Annotations.description}}</font>{{end}}
+> Details:
+  {{- range .Labels.SortedPairs }}
+> - {{ .Name }}: {{ .Value }}
+  {{- end }}
+{{- end }}
+{{- end}}
+
+{{ define "__wechat-bot-news-article" }}
+{
+    "title": "{{.Annotations.title}} is {{.Status | title}} {{if .Annotations.job}} for {{.Annotations.job}}{{end}}",
+    "description": "{{.Annotations.summary}}\n{{.Annotations.description}}",
+    "url": "{{ .GeneratorURL }},
+    "picurl": "{{ .GeneratorURL }}
+}
+{{ end }}

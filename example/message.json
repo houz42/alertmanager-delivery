@@ -1,0 +1,28 @@
+{
+    "receiver": "wechat-bot",
+    "status": "firing",
+    "alerts": [
+        {
+            "status": "firing",
+            "labels": {
+                "key1": "val1"
+            },
+            "annotations": {
+                "title": "SomethingBad",
+                "summary": "something really bad happened",
+                "description": "something really bad happened"
+            }
+        }
+    ],
+    "commonAnnotations": {
+        "mentions": "[\"@all\"]",
+        "mention_mobiles": "[\"17811916064\"]"
+    },
+    "commonLabels": {
+        "alertname": "SomethingBad",
+        "job": "very-important-server"
+    },
+    "groupLabels": {
+        "job": "very-important-server"
+    }
+}
