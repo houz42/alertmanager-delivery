@@ -2,23 +2,23 @@ templates:
 - example/*.tmpl
 receivers:
 - name: plain
-  url: http://fake/downstream
+  url: http://localhost:5678
   body: plain text
 - name: echo-yaml
-  url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=72c3e4a7-f77d-403b-857c-22cbe69e1ff4
+  url: http://localhost:5678
   body: '{{ template "example.echo-yaml" . }}'
 - name: wechat-bot-text
-  url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=72c3e4a7-f77d-403b-857c-22cbe69e1ff4
+  url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx
   body: '{{ template "example.wechat-bot.text" . }}'
   additional_headers:
     Content-Type: application/json
 - name: wechat-bot-markdown
-  url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=72c3e4a7-f77d-403b-857c-22cbe69e1ff4
+  url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx
   body: '{{ template "example.wechat-bot.markdown" . }}'
   additional_headers:
     Content-Type: application/json
 - name: wechat-bot-news
-  url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=72c3e4a7-f77d-403b-857c-22cbe69e1ff4
+  url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx
   body: '{{ template "example.wechat-bot.news" . }}'
   additional_headers:
     Content-Type: application/json
