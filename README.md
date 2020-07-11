@@ -1,3 +1,8 @@
+[![Actions Status](https://github.com/houz42/alertmanager-delivery/workflows/Alertmanager%20Delivery/badge.svg)](https://github.com/houz42/alertmanager-delivery/actions?query=workflow%3A%22Alertmanager+Delivery%22)
+[![Coverage Status](https://coveralls.io/repos/github/houz42/alertmanager-delivery/badge.svg?branch=master)](https://coveralls.io/github/houz42/alertmanager-delivery?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/houz42/alertmanager-delivery)](https://goreportcard.com/report/github.com/houz42/alertmanager-delivery) 
+
+
 # Alertmanager Delivery
 
 The missing template rendering for Alertmanager webhook receivers.
