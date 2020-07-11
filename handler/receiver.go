@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -20,6 +21,8 @@ import (
 
 const defualtTimeout = 1 * time.Minute
 
+var receiverNamePattern = regexp.MustCompile(`^[a-zA-Z0-9-]{1,63}$`)
+
 type Receiver struct {
 	client  *http.Client
 	tmpl    *template.Template
@@ -29,7 +32,7 @@ type Receiver struct {
 }
 
 type ReceiverConfig struct {
-	// name should be a valid dns label
+	// name should be a valid dns label, and identical
 	Name              string            `json:"name,omitempty"`
 	URL               config.URL        `json:"url,omitempty"`
 	Body              string            `json:"body,omitempty"`
@@ -38,17 +41,14 @@ type ReceiverConfig struct {
 }
 
 func NewReceiver(tmpl *template.Template, conf *ReceiverConfig) (*Receiver, error) {
-	if conf.Name == "" {
+	if !receiverNamePattern.MatchString(conf.Name) {
 		return nil, errors.New("no name in Receiver configuration")
 	}
 	if conf.URL.URL == nil {
 		return nil, errors.New("no url in Receiver configuration")
 	}
-	if conf.Body == "" {
-		return nil, errors.New("no body template in Receiver configuration")
-	}
 	if tmpl == nil {
-		return nil, errors.New("empty body template")
+		return nil, errors.New("no global template")
 	}
 	if conf.DownstreamTimeout.Duration <= 0 {
 		conf.DownstreamTimeout.Duration = defualtTimeout
@@ -116,7 +116,7 @@ func (d *Receiver) send(ctx context.Context, body io.Reader) error {
 		resp.Body.Close()
 	}()
 
-	if l := d.log.V(8); l.Enabled() {
+	if l := d.log.V(1); l.Enabled() {
 		msg, _ := ioutil.ReadAll(resp.Body)
 		l.Info("new message deliveried", "message", body, "response", msg)
 	}

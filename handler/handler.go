@@ -11,12 +11,12 @@ import (
 
 type Config struct {
 	// path to global template files
-	Tempaltes []string          `json:"tempaltes,omitempty"`
+	Templates []string          `json:"templates,omitempty"`
 	Receivers []*ReceiverConfig `json:"receivers,omitempty"`
 }
 
 func Serve(ctx context.Context, conf *Config) (*http.ServeMux, error) {
-	tmpl, e := template.FromGlobs(conf.Tempaltes...)
+	tmpl, e := template.FromGlobs(conf.Templates...)
 	if e != nil {
 		return nil, fmt.Errorf("parse global templates: %w", e)
 	}
@@ -28,13 +28,13 @@ func Serve(ctx context.Context, conf *Config) (*http.ServeMux, error) {
 			return nil, fmt.Errorf("config delivery handler %s: %w", cf.Name, e)
 		}
 
+		l := log.WithName(cf.Name + " handler")
 		mux.Handle("/"+cf.Name, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+			l.Info("new message")
 			e := d.NewMessage(ctx, r.Body)
 			if e != nil {
-				log.WithName(cf.Name+" handler").Error(e, "send new message")
-
+				l.Error(e, "send message to downstream")
 				rw.WriteHeader(http.StatusInternalServerError)
-				// todo: log
 				rw.Write([]byte(e.Error()))
 				return
 			}

@@ -8,10 +8,10 @@ import (
 	"os"
 
 	"github.com/go-logr/zapr"
+	"github.com/houz42/alertmanager-delivery/handler"
 	"github.com/supremind/pkg/log"
 	"github.com/supremind/pkg/shutdown"
 	"gopkg.in/yaml.v2"
-	"github.com/houz42/alertmanager-delivery/handler"
 )
 
 func main() {
@@ -60,6 +60,7 @@ func main() {
 		s.Shutdown(ctx)
 	}()
 
+	log.Info("starting delivery server", "address", *address)
 	if e := s.Serve(l); e != nil {
 		log.Error(e, "server down with error")
 		os.Exit(1)
