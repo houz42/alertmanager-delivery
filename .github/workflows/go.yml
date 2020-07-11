@@ -43,9 +43,9 @@ jobs:
         uses: docker/build-push-action@v1.1.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
           repository: houz42/alertmanager-delivery
           tag_with_ref: true
-          dockerfile: ./build/Dockerfile
+          dockerfile: Dockerfile
           add_git_labels: true
           push: true
